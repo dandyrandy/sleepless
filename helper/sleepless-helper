@@ -1,0 +1,8 @@
+#!/bin/sh
+# Root-owned helper for the Sleepless menubar app.
+# The sudoers rule permits exactly "on" and "off" — nothing else.
+case "$1" in
+    on)  exec /usr/bin/pmset -a disablesleep 1 ;;
+    off) exec /usr/bin/pmset -a disablesleep 0 ;;
+    *)   echo "usage: $0 on|off" >&2; exit 64 ;;
+esac
