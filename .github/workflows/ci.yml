@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: swift build
+
+      - name: Unit tests
+        run: swift test
+
+      - name: Shell syntax check
+        run: |
+          sh -n helper/sleepless-helper
+          sh -n helper/install-helper.sh
+          sh -n helper/uninstall-helper.sh
+          sh -n build.sh
+
+      - name: Validate generated sudoers rule
+        run: |
+          tmp=$(mktemp)
+          printf 'runner ALL=(root) NOPASSWD: /usr/local/libexec/sleepless-helper on, /usr/local/libexec/sleepless-helper off\n' > "$tmp"
+          chmod 440 "$tmp"
+          /usr/sbin/visudo -c -f "$tmp"

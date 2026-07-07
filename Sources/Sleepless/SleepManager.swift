@@ -1,4 +1,5 @@
 import Foundation
+import SleeplessCore
 
 enum SleepManager {
     static let helperPath = "/usr/local/libexec/sleepless-helper"
@@ -13,18 +14,10 @@ enum SleepManager {
         run("/usr/bin/sudo", ["-n", helperPath, disabled ? "on" : "off"]).status == 0
     }
 
-    /// `pmset -g` only prints a SleepDisabled line once the setting has been touched;
-    /// an absent line means sleep is enabled.
     static func isSleepDisabled() -> Bool {
         let result = run("/usr/bin/pmset", ["-g"])
         guard result.status == 0 else { return false }
-        for line in result.output.split(separator: "\n") {
-            let fields = line.split(whereSeparator: { $0 == " " || $0 == "\t" })
-            if fields.first == "SleepDisabled" {
-                return fields.last == "1"
-            }
-        }
-        return false
+        return parseSleepDisabled(result.output)
     }
 
     /// One-time privileged install of the helper + sudoers rule.

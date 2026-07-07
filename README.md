@@ -94,3 +94,28 @@ swift build          # debug build
 
 `swift run` works for quick iteration, but notifications and Launch at Login
 require running from the `.app` bundle.
+
+## Testing
+
+The pure logic (pmset output parsing, battery auto-off decision, interval
+formatting) lives in the `SleeplessCore` target and is unit-tested:
+
+```sh
+swift test
+```
+
+CI (GitHub Actions, macOS) runs the build, the unit tests, shell syntax
+checks on the helper scripts, and validates the generated sudoers rule with
+`visudo -c`.
+
+### Manual smoke test
+
+The paths that matter most need root and real hardware, so they stay manual.
+Worth re-running after a macOS update:
+
+1. **Keep Awake** → `pmset -g | grep SleepDisabled` prints `1`.
+2. Close the lid → the machine stays reachable (ping/ssh from your phone).
+3. **Turn Off — Allow Sleep** → the SleepDisabled line shows `0`.
+4. Keep Awake, then Quit the app → flag returns to `0` (sleep restored).
+5. Keep Awake, `kill -9 $(pgrep Sleepless)`, relaunch → icon shows the
+   active ⚡ state; Turn Off works.

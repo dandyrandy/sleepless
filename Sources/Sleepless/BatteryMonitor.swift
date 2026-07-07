@@ -1,11 +1,6 @@
 import Foundation
 import IOKit.ps
-
-struct BatteryStatus {
-    let percent: Int?
-    let onACPower: Bool
-    let charging: Bool
-}
+import SleeplessCore
 
 enum BatteryMonitor {
     /// Reads the internal battery via IOKit. Machines without one (or read failures)

@@ -1,5 +1,6 @@
 import AppKit
 import ServiceManagement
+import SleeplessCore
 import UserNotifications
 
 final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
@@ -139,12 +140,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         return "Sleepless: On"
     }
 
-    private func formatInterval(_ interval: TimeInterval) -> String {
-        let minutes = Int(interval / 60)
-        let (h, m) = (minutes / 60, minutes % 60)
-        return h > 0 ? "\(h) h \(m) min" : "\(m) min"
-    }
-
     private func updateIcon() {
         guard let button = statusItem.button else { return }
         let symbol = active ? "bolt.fill" : "moon.zzz"
@@ -259,7 +254,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func checkBattery() {
         guard active else { return }
         let battery = BatteryMonitor.read()
-        if let percent = battery.percent, !battery.onACPower, percent <= lowBatteryPercent {
+        if battery.shouldAutoOff(belowPercent: lowBatteryPercent), let percent = battery.percent {
             deactivate(reason: "battery low (\(percent)%)")
         }
     }
